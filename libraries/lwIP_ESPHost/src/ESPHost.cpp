@@ -1,25 +1,26 @@
 /*
- WiFi <-> LWIP for ESPHost library in RP2040 Core
+    WiFi <-> LWIP for ESPHost library in RP2040 Core
 
- Copyright (c) 2024 Juraj Andrassy
+    Copyright (c) 2024 Juraj Andrassy
 
- This library is free software; you can redistribute it and/or
- modify it under the terms of the GNU Lesser General Public
- License as published by the Free Software Foundation; either
- version 2.1 of the License, or (at your option) any later version.
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Lesser General Public
+    License as published by the Free Software Foundation; either
+    version 2.1 of the License, or (at your option) any later version.
 
- This library is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- Lesser General Public License for more details.
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Lesser General Public License for more details.
 
- You should have received a copy of the GNU Lesser General Public
- License along with this library; if not, write to the Free Software
- Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- */
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+*/
 
 #include "ESPHost.h"
-#include "CEspControl.h"
+#include <CEspControl.h>
+#include <LwipEthernet.h>
 
 ESPHost::ESPHost(int8_t cs, arduino::SPIClass &spi, int8_t intrpin) {
     (void) cs;
@@ -42,8 +43,10 @@ void ESPHost::end() {
 }
 
 uint16_t ESPHost::sendFrame(const uint8_t *data, uint16_t datalen) {
+    ethernet_arch_lwip_gpio_mask();
     int res = CEspControl::getInstance().sendBuffer(apMode ? ESP_AP_IF : ESP_STA_IF, 0, (uint8_t*) data, datalen);
     CEspControl::getInstance().communicateWithEsp();
+    ethernet_arch_lwip_gpio_unmask();
     return (res == ESP_CONTROL_OK) ? datalen : 0;
 }
 
